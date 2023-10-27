@@ -170,7 +170,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2023-10-27 20:51:42 / Modified: 21:03:02" itemprop="dateCreated datePublished" datetime="2023-10-27T20:51:42+08:00">2023-10-27</time>
+              <time title="Created: 2023-10-27 20:51:42 / Modified: 21:05:05" itemprop="dateCreated datePublished" datetime="2023-10-27T20:51:42+08:00">2023-10-27</time>
             </span>
 
           
@@ -185,7 +185,7 @@
 
       
           <p>看了這篇文章後想自己嘗試看看，弄了好幾天總算搞出來了 owob<br><a target="_blank" rel="noopener" href="https://doar-e.github.io/blog/2019/01/28/introduction-to-turbofan/#setup">https://doar-e.github.io/blog/2019/01/28/introduction-to-turbofan/#setup</a></p>
-<h2 id="環境搭建"><a href="#環境搭建" class="headerlink" title="環境搭建"></a>環境搭建</h2><p>使用 Ubuntu 20.04<br>patch 連結: <a target="_blank" rel="noopener" href="https://github.com/google/google-ctf/blob/master/2018/finals/pwn-just-in-time/attachments/addition-reducer.patch">https://github.com/google/google-ctf/blob/master/2018/finals/pwn-just-in-time/attachments/addition-reducer.patch</a></p>
+<h2 id="環境搭建"><a href="#環境搭建" class="headerlink" title="環境搭建"></a>環境搭建</h2><p>使用 Ubuntu 20.04<br>patch: <a target="_blank" rel="noopener" href="https://github.com/google/google-ctf/blob/master/2018/finals/pwn-just-in-time/attachments/addition-reducer.patch">https://github.com/google/google-ctf/blob/master/2018/finals/pwn-just-in-time/attachments/addition-reducer.patch</a></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git reset --hard e0a58f83255d1dae907e2ba4564ad8928a7dedf4</span><br><span class="line">git apply addition-reducer.patch</span><br><span class="line">gn gen out/x64.release --args=&#x27;v8_monolithic=true v8_use_external_startup_data=false is_component_build=false is_debug=false target_cpu =&quot;x64&quot; use_goma=false goma_dir=&quot;None&quot; v8_enable_backtrace=true v8_enable_disassembler=true v8_enable_object_print=true v8_enable_verify_heap=true v8_untrusted_code_mitigations = false&#x27;</span><br><span class="line">ninja -C out/x64.release d8</span><br></pre></td></tr></table></figure>
 
 <h2 id="patch-分析"><a href="#patch-分析" class="headerlink" title="patch 分析"></a>patch 分析</h2><p>題目給了兩個 patch</p>
